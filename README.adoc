@@ -1,0 +1,85 @@
+= CSV-Analysis
+:stem:
+
+An easy to use csv data analyser.
+
+The csv-analysis tool's goal is to provide an easy way to analyse your data with different tools so you can then create a customized tool that matches your data's needs.
+
+In the case of a single column analysis, it will provide statistical information on the data.
+
+In the case of X, Y datasets, it will provide different plots with the following:
+
+* Y vs X.
+* Y vs X, least squares polynomial regression.
+* Linear Transformation Y vs X, least squares linear regression.
+
+In the case of X, Y datasets, where the X dataset is time based, it will plot Y vs X and provide statistical information on the Y data.
+
+== Linear transformation
+
+|===
+|Type |Equation |Linear |Transformation
+
+|Power
+|stem:[y = ax^b]
+|stem:[log y = log a + b * log x]
+|stem:[Y = log y] +
+stem:[X = log x] +
+stem:[A = log a] +
+stem:[B = b]
+
+|Exponential
+|stem:[y = ae^(bx) = aB^x]
+|stem:[ln y = ln a + bx = ln a + ln B * x]
+|stem:[Y = ln y] +
+stem:[X = x] +
+stem:[A = ln a] +
+stem:[B = b = ln B]
+
+|Logarithmic
+|stem:[y = a + b ln x]
+|stem:[y = a + b ln x]
+|stem:[Y = y] +
+stem:[X = ln x] +
+stem:[A = a] +
+stem:[B = b]
+
+|Reciprocal
+|stem:[y = a + b / (1 + x)]
+|stem:[y = a + b * 1 / (1 + x)]
+|
+
+|Reciprocal
+|stem:[y = 1 / (a + bx)]
+|stem:[1/y = a + bx]
+|
+
+|Reciprocal
+|stem:[y = 1 / (a + bx)^2]
+|stem:[1/sqrt(y) = a + bx]
+|
+
+|Square Root
+|stem:[y = a + b * sqrt(x)]
+|stem:[y = a + b * sqrt(x)]
+|
+
+|===
+
+== Usage
+
+== Roadmap
+
+* Clean up code.
+* Split into cli app and lib to allow for custom solutions.
+* Add list of common date formats to ease --xtimeformat use.
+
+== License
+
+This file is part of csv-analysis.
+
+Copyright (C) 2017  David Gamba Rios
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
