@@ -91,12 +91,14 @@ func synopsis() {
 script -x <n> -y <n> <csv-file>...
        [--no-header|--nh] [--filter-zero|--fz]
 			 [--trim-start|--ts <n>] [--trim-end|--te <n>]
-			 [--degree] [--review]
+			 [--degree] [--regression] [--review]
+			 [--plot-title <title>] [--plot-x-label <label>] [--plot-y-label <label>]
 
 # Time plot
 script -x <n> -y <n> <csv-file>... -xtime <timeformat>
        [--no-header|--nh] [--filter-zero|--fz]
 			 [--trim-start|--ts <n>] [--trim-end|--te <n>]
+			 [--plot-title <title>] [--plot-x-label <label>] [--plot-y-label <label>]
 
 # Inspect data and exit
 script [--show-header|-s] [--show-data|--sd] <csv-file>...
@@ -125,6 +127,9 @@ script [--help]
 # --debug: Show debug output.
 #
 # --xtime: Mon Jan 2 15:04:05.000 MST 2006
+#          Examples:
+#          --xtime '2006/01/02 15:04:05.000'
+#          --xtime '2006-01-02 15:04:05.000'
 `
 	fmt.Fprintln(os.Stderr, synopsis)
 }
@@ -158,7 +163,6 @@ func main() {
 	// Linear Regression degree
 	opt.IntVar(&degree, "degree", 1, "degree")
 	// Action
-	opt.Bool("plot-data", false, "p")
 	opt.Bool("regression", false, "r")
 	// Plot options
 	opt.StringVar(&pTitle, "plot-title", "Data", "pt")
@@ -213,7 +217,8 @@ func main() {
 		var xSliceDataset, ySliceDataset []float64
 		for _, e := range sliceDatasetsString[0] {
 			trimmed := strings.TrimSpace(e)
-			t, err := time.Parse(xTimeFormat, trimmed)
+			trimmedXTimeFormat := strings.TrimSpace(xTimeFormat)
+			t, err := time.Parse(trimmedXTimeFormat, trimmed)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "ERROR: time format '%s': %s\n", xTimeFormat, err)
 				continue
@@ -264,12 +269,17 @@ func main() {
 		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xSliceDataset), trimStart, trimEnd)
 
 		xTrimmed, yTrimmed := trimData(xSliceDataset, ySliceDataset, trimStart, trimEnd)
-		if opt.Called("plot-data") {
-			regression.PlotRegression(xTrimmed, yTrimmed, func(x float64) float64 { return x }, 0, regression.PlotSettings{Title: "Data", XLabel: "X", YLabel: "Y", DataLabel: "Data"})
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-				os.Exit(1)
-			}
+		regression.PlotRegression(xTrimmed, yTrimmed, func(x float64) float64 { return x }, 0, regression.PlotSettings{
+			Title:     pTitle,
+			XLabel:    pXLabel,
+			YLabel:    pYLabel,
+			DataLabel: pTitle,
+		})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		if !opt.Called("regression") {
 			os.Exit(0)
 		}
 
