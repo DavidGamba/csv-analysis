@@ -68,11 +68,31 @@ stem:[B = b]
 
 == Usage
 
+link:csv-analysis.adoc[]
+
 == Roadmap
 
 * Clean up code.
+
+* Add a nicer Readme.
+
+* Add man page.
+
 * Split into cli app and lib to allow for custom solutions.
+
 * Add list of common date formats to ease --xtimeformat use.
+
+* Read date formats in non-golang date formats.
+For example, the `date` command format.
+
+* Fix R^2^ calculations.
+
+* Change power transformation from Log10 to Ln.
+
+* Add Growth stem:[y = ae^(b/x)] -> stem:[ln y = ln a + b * 1/x]
+
+* Add hyperbola stem:[y = x / (ax - b)] -> stem:[1/y = a - b (1/x)]
+
 
 == License
 

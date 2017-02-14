@@ -11,6 +11,7 @@ view:
 
 doc:
 	asciidoctor README.adoc
+	asciidoctor -b manpage csv-analysis.adoc
 
 open:
 	open README.html

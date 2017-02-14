@@ -84,26 +84,26 @@ func trimData(x, y []float64, trimStart, trimEnd int) ([]float64, []float64) {
 }
 
 func synopsis() {
-	synopsis := `script --column|-c <n> <csv-file>...
+	synopsis := `csv-analysis --column|-c <n> <csv-file>...
        [--no-header|--nh] [--filter-zero|--fz] 
 
 # Regression analysis
-script -x <n> -y <n> <csv-file>...
+csv-analysis -x <n> -y <n> <csv-file>...
        [--no-header|--nh] [--filter-zero|--fz]
 			 [--trim-start|--ts <n>] [--trim-end|--te <n>]
 			 [--degree] [--regression] [--review]
 			 [--plot-title <title>] [--plot-x-label <label>] [--plot-y-label <label>]
 
 # Time plot
-script -x <n> -y <n> <csv-file>... -xtime <timeformat>
+csv-analysis -x <n> -y <n> <csv-file>... -xtime <timeformat>
        [--no-header|--nh] [--filter-zero|--fz]
 			 [--trim-start|--ts <n>] [--trim-end|--te <n>]
 			 [--plot-title <title>] [--plot-x-label <label>] [--plot-y-label <label>]
 
 # Inspect data and exit
-script [--show-header|-s] [--show-data|--sd] <csv-file>...
+csv-analysis [--show-header|-s] [--show-data|--sd] <csv-file>...
 
-script [--help]
+csv-analysis [--help]
 
 # --column: Column to use for statistical analysis. n starts at 1.
 #

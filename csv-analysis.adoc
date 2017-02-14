@@ -1,0 +1,120 @@
+= csv-analysis(1)
+
+== Name
+
+csv-analysis - An easy to use csv data analyser.
+
+== Synopsys
+
+*csv-analysis* *--column*|*-c* _n_ _csv-file_...
+        [*--no-header*|*--nh*] [*--filter-zero*|*--fz*]
+
++# Inspect data and exit+
+
+*csv-analysis* [*--show-header*|*-s*] [*--show-data*|*--sd*] _csv-file_...
+
++# Regression analysis+
+
+*csv-analysis* *-x* _n_ *-y* _n_ _csv-file_...
+        [*--no-header*|*--nh*] [*--filter-zero*|*--fz*]
+        [*--trim-start*|*--ts* _n_] [*--trim-end*|*--te* _n_]
+        [*--degree* _n_] [*--regression*] [*--review*]
+        [*--plot-title* _title_] [*--plot-x-label* _label_] [*--plot-y-label* _label_]
+
++# Time plot+
+
+*csv-analysis* *-x* _n_ *-y* _n_ _csv-file_... *--xtime* _timeformat_
+        [*--no-header*|*--nh*] [*--filter-zero*|*--fz*]
+        [*--trim-start*|*--ts* _n_] [*--trim-end*|*--te* _n_]
+        [*--plot-title* _title_] [*--plot-x-label* _label_] [*--plot-y-label* _label_]
+
+*csv-analysis* [*--help*]
+
+== Description
+
+csv-analysis will go through one or multiple CSV files and perform analysis on the aggregated data.
+
+In the case of a single column analysis, it will provide statistical information on the data.
+
+In the case of X, Y datasets, it will provide different plots with the following:
+
+* Y vs X.
+* Y vs X, least squares polynomial regression.
+* Linear Transformation Y vs X, least squares linear regression.
+
+In the case of X, Y datasets, where the X dataset is time based, it will plot Y vs X and provide statistical information on the Y data.
+
+== Options
+
+_csv-file_::
+One or multiple CSV files with data.
+They may or may not contain a header line.
+
+*--column* _n_:: Column to use for statistical analysis.
+_n_ starts at 1.
+
+*--no-header*:: The CSV file has no header.
+It is assumed that it does by default.
+
+*--filter-zero* | *--fz*: Ignore zeroes from statistical analysis.
+
+*--x*, *--y*:: columns to use for X and Y when doing regression analysis.
+
+*--trim-start* _n_, *--trim-end* _n_:: Trim _n_ fields from the CSV dataset.
+
+*--degree* _n_:: polynomial regression degree.
+
+*--review*:: Show linear transformation graphs.
+
+*--show-header*:: Show the header of the first CSV file and exit.
+
+*--show-data*:: Show the header and the first row of the first csv file and exit.
+
+*--debug*:: Show debug output.
+
+*--xtime* _timeformat_:: Time format used to parse the X column.
+Currently it uses Golang’s format for parsing time based on `Mon Jan 2 15:04:05.000 MST 2006`.
++
+Examples:
++
+----
+--xtime "2006/01/02 15:04:05.000"
+--xtime "2006-01-02 15:04:05.000"
+ANSIC
+--xtime "Mon Jan _2 15:04:05 2006"
+UnixDate
+--xtime "Mon Jan _2 15:04:05 MST 2006"
+RubyDate
+--xtime "Mon Jan 02 15:04:05 -0700 2006"
+RFC822
+--xtime "02 Jan 06 15:04 MST"
+RFC822Z
+--xtime "02 Jan 06 15:04 -0700"
+RFC850
+--xtime "Monday, 02-Jan-06 15:04:05 MST"
+RFC1123
+--xtime "Mon, 02 Jan 2006 15:04:05 MST"
+RFC1123Z
+--xtime "Mon, 02 Jan 2006 15:04:05 -0700"
+RFC3339
+--xtime "2006-01-02T15:04:05Z07:00"
+----
+
+== Known issues
+
+* The row count starts at the first non empty row.
+In the case were the header column doesn’t span the full length of the data, the row count will be different for a column that has a header vs one that doesn’t.
+
+== Source code
+
+github: <https://github.com/DavidGamba/csv-analysis>
+
+== License
+
+This file is part of csv-analysis.
+
+Copyright (C) 2017  David Gamba Rios
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
