@@ -13,6 +13,7 @@ package regression
 
 import (
 	"fmt"
+	"image/color"
 	"regexp"
 	"strings"
 
@@ -54,20 +55,45 @@ func NewPlot(ps PlotSettings) (*plot.Plot, error) {
 	return p, nil
 }
 
+// YDataLabel -
+type YDataLabel struct {
+	Data  plotter.XYs
+	Label string
+}
+
+// RGBA color "image/color"
+var colorList = []color.RGBA{
+	color.RGBA{R: 255, A: 255}, // Red
+	color.RGBA{G: 255, A: 255}, // Green
+	color.RGBA{B: 255, A: 255}, // Blue
+}
+
+func getColor(i int) color.RGBA {
+	n := len(colorList)
+	j := i % n
+	return colorList[j]
+}
+
 // PlotRegression -
-func PlotRegression(x, y []float64, f func(float64) float64, r2 float64, ps PlotSettings) error {
+func PlotRegression(x []float64, ys [][]float64, f func(float64) float64, r2 float64, ps PlotSettings) error {
 	p, err := NewPlot(ps)
 	if err != nil {
 		return err
 	}
-	pts := make(plotter.XYs, len(x))
-	for i := range x {
-		pts[i].X = x[i]
-		pts[i].Y = y[i]
-	}
-	err = plotutil.AddLinePoints(p, ps.DataLabel, pts)
-	if err != nil {
-		return err
+	for i, y := range ys {
+		pts := make(plotter.XYs, len(x))
+		for j := range x {
+			pts[j].X = x[j]
+			pts[j].Y = y[j]
+		}
+		lpLine, lpPoints, err := plotter.NewLinePoints(pts)
+		if err != nil {
+			return err
+		}
+		lpLine.Color = getColor(i)
+		lpPoints.Color = getColor(i)
+		p.Add(lpLine, lpPoints)
+		p.Legend.Add(fmt.Sprintf("%s %d", ps.DataLabel, i), lpLine, lpPoints)
 	}
 
 	if r2 != 0 {
@@ -116,7 +142,7 @@ func PlotTimeData(x, y []float64, ps PlotSettings) error {
 func (s Solution) PlotLinearTransformation(p Plotter) error {
 	fmt.Printf("Linear   %-20s R²=%.4f a=%10f b=%10f\n", p.Name(), s.R2t, s.At, s.Bt)
 	fmt.Printf("         %s -> %s\n", p.TextEquation(), p.TextTransformedEquation())
-	return PlotRegression(s.Xt, s.Yt, s.LinearFunction(), s.R2t, PlotSettings{
+	return PlotRegression(s.Xt, [][]float64{s.Yt}, s.LinearFunction(), s.R2t, PlotSettings{
 		Title:     "Linear " + p.Name(),
 		XLabel:    p.XLabel(),
 		YLabel:    p.YLabel(),
@@ -127,7 +153,7 @@ func (s Solution) PlotLinearTransformation(p Plotter) error {
 // Plot -
 func (s Solution) Plot(p Plotter) error {
 	fmt.Printf("Equation %-20s R²t=%.4f R²=%.4f a=%10f b=%10f\n", p.TextEquation(), s.R2t, s.R2, s.A, s.B)
-	return PlotRegression(s.X, s.Y, s.RegressionFunction(), s.R2, PlotSettings{
+	return PlotRegression(s.X, [][]float64{s.Y}, s.RegressionFunction(), s.R2, PlotSettings{
 		Title:     p.Name(),
 		XLabel:    "X",
 		YLabel:    "Y",
@@ -138,7 +164,7 @@ func (s Solution) Plot(p Plotter) error {
 // Plot -
 func (s PolynomialSolution) Plot() error {
 	fmt.Printf("Polynomial degree %d R²=%.4f\n", s.Degree, s.R2)
-	return PlotRegression(s.X, s.Y, s.PolynomialFunction(), s.R2, PlotSettings{
+	return PlotRegression(s.X, [][]float64{s.Y}, s.PolynomialFunction(), s.R2, PlotSettings{
 		Title:     "Polynomial Regression",
 		XLabel:    "X",
 		YLabel:    "Y",
