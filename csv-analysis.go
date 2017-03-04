@@ -65,22 +65,43 @@ func printCSVColumnStats(files []string, column int) error {
 	return nil
 }
 
-// trimData -
-func trimData(x, y []float64, trimStart, trimEnd int) ([]float64, []float64) {
-	n := len(x) - trimStart - trimEnd
-	xSliceDataset := make([]float64, n)
-	ySliceDataset := make([]float64, n)
-	for i := range x {
-		if i < trimStart {
-			continue
-		}
-		if i >= len(x)-trimEnd {
-			break
-		}
-		xSliceDataset[i-trimStart] = x[i]
-		ySliceDataset[i-trimStart] = y[i]
+func validateMinInt(min, value int) error {
+	if value < min {
+		return fmt.Errorf("can not be less than %d", min)
 	}
-	return xSliceDataset, ySliceDataset
+	return nil
+}
+func validateMaxInt(max, value int) error {
+	if value > max {
+		return fmt.Errorf("can not be bigger than %d", max)
+	}
+	return nil
+}
+
+// trimSlice - It will trim the start and end of a slice.
+func trimSlice(x []float64, trimStart, trimEnd int) ([]float64, error) {
+	n := len(x)
+	err := validateMinInt(0, trimStart)
+	if err != nil {
+		return nil, fmt.Errorf("trimStart %s", err)
+	}
+	err = validateMaxInt(n-1, trimStart)
+	if err != nil {
+		return nil, fmt.Errorf("trimStart %s", err)
+	}
+	err = validateMinInt(0, trimEnd)
+	if err != nil {
+		return nil, fmt.Errorf("trimEnd %s", err)
+	}
+	err = validateMaxInt(n-1, trimEnd)
+	if err != nil {
+		return nil, fmt.Errorf("trimEnd %s", err)
+	}
+	err = validateMaxInt(n-1, trimStart+trimEnd)
+	if err != nil {
+		return nil, fmt.Errorf("trimStart plus trimEnd %s", err)
+	}
+	return x[trimStart : n-trimEnd], nil
 }
 
 func synopsis() {
@@ -240,7 +261,12 @@ func main() {
 			fmt.Fprintf(os.Stderr, "ERROR: Column lenghts do not match\n")
 			os.Exit(1)
 		}
-		xTrimmed, yTrimmed := trimData(xSliceDataset, ySliceDataset, trimStart, trimEnd)
+		xTrimmed, err := trimSlice(xSliceDataset, trimStart, trimEnd)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		yTrimmed, _ := trimSlice(ySliceDataset, trimStart, trimEnd)
 		regression.PlotTimeData(xTrimmed, yTrimmed, regression.PlotSettings{
 			Title:  pTitle,
 			XLabel: pXLabel,
@@ -263,12 +289,18 @@ func main() {
 		xSliceDataset := sliceDatasets[0]
 		ySliceDataset := sliceDatasets[1]
 
+		xTrimmed, err := trimSlice(xSliceDataset, trimStart, trimEnd)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		yTrimmed, _ := trimSlice(ySliceDataset, trimStart, trimEnd)
+
 		// TODO: maybe show this only with verbose option
-		fmt.Printf("Column X (%d): %v\n", xColumn, xSliceDataset)
-		fmt.Printf("Column Y (%d): %v\n", yColumn, ySliceDataset)
+		fmt.Printf("Column X (%d): %v\n", xColumn, xTrimmed)
+		fmt.Printf("Column Y (%d): %v\n", yColumn, yTrimmed)
 		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xSliceDataset), trimStart, trimEnd)
 
-		xTrimmed, yTrimmed := trimData(xSliceDataset, ySliceDataset, trimStart, trimEnd)
 		regression.PlotRegression(xTrimmed, yTrimmed, func(x float64) float64 { return x }, 0, regression.PlotSettings{
 			Title:     pTitle,
 			XLabel:    pXLabel,
