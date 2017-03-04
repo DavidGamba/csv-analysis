@@ -19,7 +19,6 @@ import (
 
 	"github.com/gonum/plot"
 	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/plotutil"
 	"github.com/gonum/plot/vg"
 )
 
@@ -115,20 +114,26 @@ func PlotRegression(x []float64, ys [][]float64, f func(float64) float64, r2 flo
 }
 
 // PlotTimeData -
-func PlotTimeData(x, y []float64, ps PlotSettings) error {
+func PlotTimeData(x []float64, ys [][]float64, ps PlotSettings) error {
 	p, err := NewPlot(ps)
 	if err != nil {
 		return err
 	}
 	p.X.Tick.Marker = plot.TimeTicks{}
-	pts := make(plotter.XYs, len(x))
-	for i := range x {
-		pts[i].X = x[i]
-		pts[i].Y = y[i]
-	}
-	err = plotutil.AddLinePoints(p, ps.DataLabel, pts)
-	if err != nil {
-		return err
+	for i, y := range ys {
+		pts := make(plotter.XYs, len(x))
+		for j := range x {
+			pts[j].X = x[j]
+			pts[j].Y = y[j]
+		}
+		lpLine, lpPoints, err := plotter.NewLinePoints(pts)
+		if err != nil {
+			return err
+		}
+		lpLine.Color = getColor(i)
+		lpPoints.Color = getColor(i)
+		p.Add(lpLine, lpPoints)
+		p.Legend.Add(fmt.Sprintf("%s %d", ps.DataLabel, i), lpLine, lpPoints)
 	}
 	// Save the plot to a PNG file.
 	if err := p.Save(8*vg.Inch, 8*vg.Inch, "plot-"+filenameClean(ps.Title)+".png"); err != nil {

@@ -235,7 +235,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		var xSliceDataset, ySliceDataset []float64
+		var xSliceDataset []float64
 		for _, e := range sliceDatasetsString[0] {
 			trimmed := strings.TrimSpace(e)
 			trimmedXTimeFormat := strings.TrimSpace(xTimeFormat)
@@ -246,28 +246,29 @@ func main() {
 			}
 			xSliceDataset = append(xSliceDataset, float64(t.Unix()))
 		}
-		sliceDatasets, err := cf.GetFloat64Columns(*yColumns...)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			os.Exit(1)
-		}
-		ySliceDataset = sliceDatasets[0]
-		// TODO: maybe show this only with verbose option
-		// fmt.Printf("Column X (%d): %v\n", xColumn, xSliceDataset)
-		fmt.Printf("Column Y (%d): %v\n", yColumns, ySliceDataset)
-		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xSliceDataset), trimStart, trimEnd)
-
-		if len(xSliceDataset) != len(ySliceDataset) {
-			fmt.Fprintf(os.Stderr, "ERROR: Column lenghts do not match\n")
-			os.Exit(1)
-		}
 		xTrimmed, err := trimSlice(xSliceDataset, trimStart, trimEnd)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		yTrimmed, _ := trimSlice(ySliceDataset, trimStart, trimEnd)
-		regression.PlotTimeData(xTrimmed, yTrimmed, regression.PlotSettings{
+
+		sliceDatasets, err := cf.GetFloat64Columns(*yColumns...)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		var sYTrimmed [][]float64
+		for _, ySliceDataset := range sliceDatasets {
+			yTrimmed, _ := trimSlice(ySliceDataset, trimStart, trimEnd)
+			sYTrimmed = append(sYTrimmed, yTrimmed)
+		}
+
+		// TODO: maybe show this only with verbose option
+		// fmt.Printf("Column X (%d): %v\n", xColumn, xTrimmed)
+		// fmt.Printf("Column Y (%v): %v\n", *yColumns, sYTrimmed)
+		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xTrimmed), trimStart, trimEnd)
+
+		regression.PlotTimeData(xTrimmed, sYTrimmed, regression.PlotSettings{
 			Title:  pTitle,
 			XLabel: pXLabel,
 			YLabel: pYLabel,
