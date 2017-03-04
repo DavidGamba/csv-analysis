@@ -156,7 +156,7 @@ csv-analysis [--help]
 }
 
 func main() {
-	var column, xColumn, yColumn int // field to analize
+	var column, xColumn int // field to analize
 	var trimStart, trimEnd, degree int
 	var pTitle, pYLabel, pXLabel string
 	var xTimeFormat string
@@ -177,7 +177,7 @@ func main() {
 	opt.IntVar(&column, "column", 1, "c")
 	opt.IntVar(&xColumn, "x", 1)
 	opt.StringVarOptional(&xTimeFormat, "xtime", time.RFC3339)
-	opt.IntVar(&yColumn, "y", 1)
+	yColumns := opt.IntSliceMulti("y", 1, 99)
 	// CSV data trimming
 	opt.IntVar(&trimStart, "trim-start", 0, "ts")
 	opt.IntVar(&trimEnd, "trim-end", 0, "te")
@@ -246,7 +246,7 @@ func main() {
 			}
 			xSliceDataset = append(xSliceDataset, float64(t.Unix()))
 		}
-		sliceDatasets, err := cf.GetFloat64Columns(yColumn)
+		sliceDatasets, err := cf.GetFloat64Columns(*yColumns...)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
@@ -254,7 +254,7 @@ func main() {
 		ySliceDataset = sliceDatasets[0]
 		// TODO: maybe show this only with verbose option
 		// fmt.Printf("Column X (%d): %v\n", xColumn, xSliceDataset)
-		fmt.Printf("Column Y (%d): %v\n", yColumn, ySliceDataset)
+		fmt.Printf("Column Y (%d): %v\n", yColumns, ySliceDataset)
 		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xSliceDataset), trimStart, trimEnd)
 
 		if len(xSliceDataset) != len(ySliceDataset) {
@@ -272,7 +272,7 @@ func main() {
 			XLabel: pXLabel,
 			YLabel: pYLabel,
 		})
-		err = printCSVColumnStats(remaining, yColumn)
+		err = printCSVColumnStats(remaining, (*yColumns)[0])
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
@@ -281,27 +281,30 @@ func main() {
 		cf := csvutil.New(remaining...)
 		cf.NoHeader = noHeader
 		cf.FilterZero = filterZero
-		sliceDatasets, err := cf.GetFloat64Columns(xColumn, yColumn)
+		query := []int{xColumn}
+		query = append(query, (*yColumns)...)
+		sliceDatasets, err := cf.GetFloat64Columns(query...)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		xSliceDataset := sliceDatasets[0]
-		ySliceDataset := sliceDatasets[1]
-
-		xTrimmed, err := trimSlice(xSliceDataset, trimStart, trimEnd)
+		xTrimmed, err := trimSlice(sliceDatasets[0], trimStart, trimEnd)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		yTrimmed, _ := trimSlice(ySliceDataset, trimStart, trimEnd)
+		var sYTrimmed [][]float64
+		for _, ySliceDataset := range sliceDatasets[1:] {
+			yTrimmed, _ := trimSlice(ySliceDataset, trimStart, trimEnd)
+			sYTrimmed = append(sYTrimmed, yTrimmed)
+		}
 
 		// TODO: maybe show this only with verbose option
 		fmt.Printf("Column X (%d): %v\n", xColumn, xTrimmed)
-		fmt.Printf("Column Y (%d): %v\n", yColumn, yTrimmed)
-		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xSliceDataset), trimStart, trimEnd)
+		fmt.Printf("Column Y (%v): %v\n", *yColumns, sYTrimmed)
+		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xTrimmed), trimStart, trimEnd)
 
-		regression.PlotRegression(xTrimmed, [][]float64{yTrimmed}, func(x float64) float64 { return x }, 0, regression.PlotSettings{
+		regression.PlotRegression(xTrimmed, sYTrimmed, func(x float64) float64 { return x }, 0, regression.PlotSettings{
 			Title:     pTitle,
 			XLabel:    pXLabel,
 			YLabel:    pYLabel,
@@ -316,7 +319,7 @@ func main() {
 		}
 
 		// Original data
-		solution, err := regression.SolveTransformation(xTrimmed, yTrimmed, &regression.None{})
+		solution, err := regression.SolveTransformation(xTrimmed, sYTrimmed[0], &regression.None{})
 		if err == nil {
 			err = solution.Plot(&regression.None{})
 			printError(err)
@@ -343,7 +346,7 @@ func main() {
 
 		for _, lt := range ltList {
 			solution, err = regression.SolveTransformation(
-				xTrimmed, yTrimmed, lt.(regression.LinearTransformation))
+				xTrimmed, sYTrimmed[0], lt.(regression.LinearTransformation))
 			if err == nil {
 				if review {
 					err = solution.PlotLinearTransformation(lt.(regression.Plotter))
@@ -356,7 +359,7 @@ func main() {
 			}
 		}
 
-		s, err := regression.SolvePolynomial(xTrimmed, yTrimmed, degree)
+		s, err := regression.SolvePolynomial(xTrimmed, sYTrimmed[0], degree)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
