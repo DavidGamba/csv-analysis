@@ -78,10 +78,12 @@ func PlotRegression(x, y []float64, f func(float64) float64, r2 float64, ps Plot
 		// p.Legend.Add(fmt.Sprintf("y = %7f + %7fx", s.At(0, 0), s.At(1, 0)))
 	}
 
+	name := "plot-" + filenameClean(ps.Title) + ".png"
 	// Save the plot to a PNG file.
-	if err := p.Save(8*vg.Inch, 8*vg.Inch, "plot-"+filenameClean(ps.Title)+".png"); err != nil {
+	if err := p.Save(8*vg.Inch, 8*vg.Inch, name); err != nil {
 		return err
 	}
+	fmt.Printf("Plot: %s\n", name)
 
 	return nil
 }
