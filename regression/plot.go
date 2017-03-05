@@ -61,13 +61,23 @@ type YDataLabel struct {
 }
 
 // RGBA color "image/color"
+// First color in this list will be used last.
 var colorList = []color.RGBA{
-	color.RGBA{R: 255, A: 255}, // Red
-	color.RGBA{G: 255, A: 255}, // Green
-	color.RGBA{B: 255, A: 255}, // Blue
+	color.RGBA{R: 255, G: 127, B: 127, A: 255}, // Light pink
+	color.RGBA{G: 255, A: 255},                 // Green
+	color.RGBA{B: 255, A: 255},                 // Blue
+	color.RGBA{R: 255, G: 255, A: 255},         // Yellow
+	color.RGBA{R: 255, B: 255, A: 255},         // Pink
+	color.RGBA{G: 255, B: 255, A: 255},         // Cyan
 }
 
+// Gets the next color available.
+// When i=0, it will return RED, otherwise, it will return one color from the
+// color list.
 func getColor(i int) color.RGBA {
+	if i == 0 {
+		return color.RGBA{R: 255, A: 255} // Red
+	}
 	n := len(colorList)
 	j := i % n
 	return colorList[j]
@@ -79,7 +89,11 @@ func PlotRegression(x []float64, ys [][]float64, f func(float64) float64, r2 flo
 	if err != nil {
 		return err
 	}
-	for i, y := range ys {
+	// Plot in reverse order because the first entry is the most important
+	last := len(ys) - 1
+	for index := range ys {
+		i := last - index
+		y := ys[i]
 		pts := make(plotter.XYs, len(x))
 		for j := range x {
 			pts[j].X = x[j]
@@ -120,20 +134,23 @@ func PlotTimeData(x []float64, ys [][]float64, ps PlotSettings) error {
 		return err
 	}
 	p.X.Tick.Marker = plot.TimeTicks{}
-	for i, y := range ys {
+	// Plot in reverse order because the first entry is the most important
+	last := len(ys) - 1
+	for index := range ys {
+		i := last - index
+		y := ys[i]
 		pts := make(plotter.XYs, len(x))
 		for j := range x {
 			pts[j].X = x[j]
 			pts[j].Y = y[j]
 		}
-		lpLine, lpPoints, err := plotter.NewLinePoints(pts)
+		lpLine, _, err := plotter.NewLinePoints(pts)
 		if err != nil {
 			return err
 		}
 		lpLine.Color = getColor(i)
-		lpPoints.Color = getColor(i)
-		p.Add(lpLine, lpPoints)
-		p.Legend.Add(fmt.Sprintf("%s %d", ps.DataLabel, i), lpLine, lpPoints)
+		p.Add(lpLine)
+		p.Legend.Add(fmt.Sprintf("%s %d", ps.DataLabel, i), lpLine)
 	}
 	// Save the plot to a PNG file.
 	if err := p.Save(8*vg.Inch, 8*vg.Inch, "plot-"+filenameClean(ps.Title)+".png"); err != nil {
