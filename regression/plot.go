@@ -36,7 +36,11 @@ func filenameClean(f string) string {
 
 // PlotSettings -
 type PlotSettings struct {
-	Title, XLabel, YLabel, DataLabel string
+	Title     string
+	XLabel    string
+	YLabel    string
+	DataLabel string
+	Bold      bool
 }
 
 // NewPlot -
@@ -48,7 +52,6 @@ func NewPlot(ps PlotSettings) (*plot.Plot, error) {
 	p.Title.Text = ps.Title
 	p.X.Label.Text = ps.XLabel
 	p.Y.Label.Text = ps.YLabel
-	p.Legend.Top = true
 	p.Legend.YOffs = -150
 	p.Legend.Top = true
 	return p, nil
@@ -149,11 +152,15 @@ func PlotTimeData(x []float64, ys [][]float64, ps PlotSettings) error {
 			return err
 		}
 		lpLine.Color = getColor(i)
+		if i == 0 && ps.Bold {
+			lpLine.Width = 2
+		}
 		p.Add(lpLine)
 		p.Legend.Add(fmt.Sprintf("%s %d", ps.DataLabel, i), lpLine)
 	}
 	// Save the plot to a PNG file.
-	if err := p.Save(8*vg.Inch, 8*vg.Inch, "plot-"+filenameClean(ps.Title)+".png"); err != nil {
+	// 6, 3.5
+	if err := p.Save(12*vg.Inch, 7*vg.Inch, "plot-"+filenameClean(ps.Title)+".png"); err != nil {
 		return err
 	}
 

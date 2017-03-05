@@ -120,6 +120,7 @@ csv-analysis -x <n> -y <n> <csv-file>... -xtime <timeformat>
        [--no-header|--nh] [--filter-zero|--fz]
 			 [--trim-start|--ts <n>] [--trim-end|--te <n>]
 			 [--plot-title <title>] [--plot-x-label <label>] [--plot-y-label <label>]
+			 [--bold]
 
 # Inspect data and exit
 csv-analysis [--show-header|-s] [--show-data|--sd] <csv-file>...
@@ -160,7 +161,7 @@ func main() {
 	var trimStart, trimEnd, degree int
 	var pTitle, pYLabel, pXLabel string
 	var xTimeFormat string
-	var review bool
+	var review, bold bool
 
 	opt := getoptions.New()
 	// General options
@@ -189,6 +190,7 @@ func main() {
 	opt.StringVar(&pTitle, "plot-title", "Data", "pt")
 	opt.StringVar(&pXLabel, "plot-x-label", "", "px")
 	opt.StringVar(&pYLabel, "plot-y-label", "", "py")
+	opt.BoolVar(&bold, "bold", false)
 	remaining, err := opt.Parse(os.Args[1:])
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
@@ -272,6 +274,7 @@ func main() {
 			Title:  pTitle,
 			XLabel: pXLabel,
 			YLabel: pYLabel,
+			Bold:   bold,
 		})
 		err = printCSVColumnStats(remaining, (*yColumns)[0])
 		if err != nil {
