@@ -1,3 +1,14 @@
+build:
+	go build
+
+deps:
+	go get -u "github.com/gonum/matrix/mat64"
+	go get -u "github.com/davidgamba/go-getoptions"
+	go get -u "github.com/montanaflynn/stats"
+	go get -u "github.com/gonum/plot"
+	go get -u "github.com/gonum/plot/plotter"
+	go get -u "github.com/gonum/plot/vg"
+
 test:
 	go test ./...
 
