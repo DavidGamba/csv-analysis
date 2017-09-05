@@ -255,14 +255,19 @@ func main() {
 		}
 
 		sliceDatasets, err := cf.GetFloat64Columns(*yColumns...)
+		// TODO: Add error to check for different column lenghts
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
 		}
 		var sYTrimmed [][]float64
-		for _, ySliceDataset := range sliceDatasets {
+		for i, ySliceDataset := range sliceDatasets {
 			yTrimmed, _ := trimSlice(ySliceDataset, trimStart, trimEnd)
-			sYTrimmed = append(sYTrimmed, yTrimmed)
+			if len(yTrimmed) < 1 {
+				fmt.Fprintf(os.Stderr, "ERROR: column '%d' is empty. Removing it!\n", i)
+			} else {
+				sYTrimmed = append(sYTrimmed, yTrimmed)
+			}
 		}
 
 		// TODO: maybe show this only with verbose option

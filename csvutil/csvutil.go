@@ -57,12 +57,14 @@ func (cf *CSVFiles) GetCSVColumns(columns ...int) ([][]string, error) {
 				continue
 			}
 			if l != lc {
-				return nil, fmt.Errorf("Column lenghts do not match")
+				fmt.Fprintf(os.Stderr, "WARNING: Column lenghts do not match\n")
 			}
 			if cf.NoHeader {
 				columnsData[i] = append(columnsData[i], columnString...)
 			} else {
-				columnsData[i] = append(columnsData[i], columnString[1:]...)
+				if len(columnString) >= 1 {
+					columnsData[i] = append(columnsData[i], columnString[1:]...)
+				}
 			}
 		}
 	}
