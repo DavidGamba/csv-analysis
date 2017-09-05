@@ -19,10 +19,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/davidgamba/csv-analysis/csvutil"
-	"github.com/davidgamba/csv-analysis/regression"
-	"github.com/davidgamba/csv-analysis/stat"
-	"github.com/davidgamba/go-getoptions"
+	"github.com/DavidGamba/csv-analysis/csvutil"
+	"github.com/DavidGamba/csv-analysis/regression"
+	"github.com/DavidGamba/csv-analysis/stat"
+	"github.com/DavidGamba/go-getoptions"
 	"github.com/gonum/matrix/mat64"
 	// "github.com/gonum/optimize"
 )
