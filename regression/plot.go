@@ -159,10 +159,12 @@ func PlotTimeData(x []float64, ys [][]float64, ps PlotSettings) error {
 		p.Legend.Add(fmt.Sprintf("%s %d", ps.DataLabel, i), lpLine)
 	}
 	// Save the plot to a PNG file.
+	name := "plot-" + filenameClean(ps.Title) + ".png"
 	// 6, 3.5
-	if err := p.Save(12*vg.Inch, 7*vg.Inch, "plot-"+filenameClean(ps.Title)+".png"); err != nil {
+	if err := p.Save(12*vg.Inch, 7*vg.Inch, name); err != nil {
 		return err
 	}
+	fmt.Printf("Plot: %s\n", name)
 
 	return nil
 }
