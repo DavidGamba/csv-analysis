@@ -178,7 +178,7 @@ func main() {
 	opt.IntVar(&column, "column", 1, "c")
 	opt.IntVar(&xColumn, "x", 1)
 	opt.StringVarOptional(&xTimeFormat, "xtime", time.RFC3339)
-	yColumns := opt.IntSliceMulti("y", 1, 99)
+	yColumns := opt.IntSlice("y", 1, 99)
 	// CSV data trimming
 	opt.IntVar(&trimStart, "trim-start", 0, "ts")
 	opt.IntVar(&trimEnd, "trim-end", 0, "te")
