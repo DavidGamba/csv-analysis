@@ -313,7 +313,7 @@ func main() {
 		fmt.Printf("Column Y (%v): %v\n", *yColumns, sYTrimmed)
 		fmt.Printf("Count: %d, Trim Start: %d, Trim End: %d\n", len(xTrimmed), trimStart, trimEnd)
 
-		regression.PlotRegression(xTrimmed, sYTrimmed, func(x float64) float64 { return x }, 0, regression.PlotSettings{
+		regression.PlotRegression(xTrimmed, sYTrimmed, func(x float64) float64 { return x }, 0, 0, regression.PlotSettings{
 			Title:     pTitle,
 			XLabel:    pXLabel,
 			YLabel:    pYLabel,

@@ -87,7 +87,7 @@ func getColor(i int) color.RGBA {
 }
 
 // PlotRegression -
-func PlotRegression(x []float64, ys [][]float64, f func(float64) float64, r2 float64, ps PlotSettings) error {
+func PlotRegression(x []float64, ys [][]float64, f func(float64) float64, r2, sDev float64, ps PlotSettings) error {
 	p, err := NewPlot(ps)
 	if err != nil {
 		return err
@@ -117,6 +117,7 @@ func PlotRegression(x []float64, ys [][]float64, f func(float64) float64, r2 flo
 		p.Add(pf)
 		p.Legend.Add("Regression", pf)
 		p.Legend.Add(fmt.Sprintf("R² %.4f", r2))
+		p.Legend.Add(fmt.Sprintf("σ  %.4f", sDev))
 		// p.Legend.Add(fmt.Sprintf("y = %7f + %7fx", s.At(0, 0), s.At(1, 0)))
 	}
 
@@ -171,9 +172,9 @@ func PlotTimeData(x []float64, ys [][]float64, ps PlotSettings) error {
 
 // PlotLinearTransformation -
 func (s Solution) PlotLinearTransformation(p Plotter) error {
-	fmt.Printf("Linear   %-20s R²=%.4f a=%10f b=%10f\n", p.Name(), s.R2t, s.At, s.Bt)
+	fmt.Printf("Linear   %-20s R²=%.4f σ=%.4f a=%10f b=%10f\n", p.Name(), s.R2t, s.SDevt, s.At, s.Bt)
 	fmt.Printf("         %s -> %s\n", p.TextEquation(), p.TextTransformedEquation())
-	return PlotRegression(s.Xt, [][]float64{s.Yt}, s.LinearFunction(), s.R2t, PlotSettings{
+	return PlotRegression(s.Xt, [][]float64{s.Yt}, s.LinearFunction(), s.R2t, s.SDevt, PlotSettings{
 		Title:     "Linear " + p.Name(),
 		XLabel:    p.XLabel(),
 		YLabel:    p.YLabel(),
@@ -183,8 +184,8 @@ func (s Solution) PlotLinearTransformation(p Plotter) error {
 
 // Plot -
 func (s Solution) Plot(p Plotter) error {
-	fmt.Printf("Equation %-20s R²t=%.4f R²=%.4f a=%10f b=%10f\n", p.TextEquation(), s.R2t, s.R2, s.A, s.B)
-	return PlotRegression(s.X, [][]float64{s.Y}, s.RegressionFunction(), s.R2, PlotSettings{
+	fmt.Printf("Equation %-20s R²t=%.4f R²=%.4f σ=%.4f σt=%.4f a=%10f b=%10f\n", p.TextEquation(), s.R2t, s.R2, s.SDev, s.SDevt, s.A, s.B)
+	return PlotRegression(s.X, [][]float64{s.Y}, s.RegressionFunction(), s.R2, s.SDev, PlotSettings{
 		Title:     p.Name(),
 		XLabel:    "X",
 		YLabel:    "Y",
@@ -194,8 +195,8 @@ func (s Solution) Plot(p Plotter) error {
 
 // Plot -
 func (s PolynomialSolution) Plot() error {
-	fmt.Printf("Polynomial degree %d R²=%.4f\n", s.Degree, s.R2)
-	return PlotRegression(s.X, [][]float64{s.Y}, s.PolynomialFunction(), s.R2, PlotSettings{
+	fmt.Printf("Polynomial degree %d R²=%.4f σ=%.4f\n", s.Degree, s.R2, s.SDev)
+	return PlotRegression(s.X, [][]float64{s.Y}, s.PolynomialFunction(), s.R2, s.SDev, PlotSettings{
 		Title:     "Polynomial Regression",
 		XLabel:    "X",
 		YLabel:    "Y",

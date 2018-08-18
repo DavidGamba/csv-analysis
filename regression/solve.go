@@ -28,6 +28,8 @@ type Solution struct {
 	LT     LinearTransformation
 	R2t    float64
 	R2     float64
+	SDevt  float64
+	SDev   float64
 }
 
 // SolveTransformation - Given a pointer to X and Y []float64 data and a linear
@@ -57,6 +59,8 @@ func SolveTransformation(xo, yo []float64, lt LinearTransformation) (Solution, e
 
 	result.R2t = r2Calc(result.Xt, result.Yt, result.LinearFunction())
 	result.R2 = r2Calc(result.X, result.Y, result.RegressionFunction())
+	result.SDevt = sDevCalc(result.Xt, result.Yt, result.LinearFunction())
+	result.SDev = sDevCalc(result.X, result.Y, result.RegressionFunction())
 	return result, nil
 }
 
@@ -81,6 +85,7 @@ type PolynomialSolution struct {
 	Degree int
 	A      *mat.Dense // Solution
 	R2     float64
+	SDev   float64
 }
 
 // SolvePolynomial - Given a pointer to X and Y []float64 data and a linear
@@ -253,11 +258,26 @@ func sliceMean(x []float64) float64 {
 // r2Calc - returns the R²
 // ∑(yᵢFitted - ySampleMean)² / ∑(yᵢ - ySampleMean)²
 func r2Calc(x, y []float64, fx func(float64) float64) float64 {
-	mean := sliceMean(y)
-	var ssTotal, ssReg float64
+	// ssTotal: Total Sum of squares => ∑(yᵢ - ySampleMean)²
+	// ssReg: Regression/Explained Sum of squares => ∑(yᵢFitted - ySampleMean)²
+	// ssRes: Residual Sum of squares => ∑(yᵢ - yᵢFitted)² = ∑(eᵢ)²
+	yMean := sliceMean(y)
+	var ssTotal, ssReg, ssRes float64
 	for i, xi := range x {
-		ssReg += math.Pow(fx(xi)-mean, float64(2))
-		ssTotal += math.Pow(y[i]-mean, float64(2))
+		ssReg += math.Pow(fx(xi)-yMean, float64(2))
+		ssRes += math.Pow(y[i]-fx(xi), float64(2))
+		ssTotal += math.Pow(y[i]-yMean, float64(2))
 	}
-	return ssReg / ssTotal
+	return 1 - (ssRes / ssTotal)
+}
+
+// SDevCalc - returns the standard deviation
+// √(σ²/DegreesOfFreedom) = √(ssRes/n-2)
+func sDevCalc(x, y []float64, fx func(float64) float64) float64 {
+	var ssRes float64
+	n := float64(len(y))
+	for i, xi := range x {
+		ssRes += math.Pow(y[i]-fx(xi), float64(2))
+	}
+	return math.Sqrt(ssRes / (n - 2))
 }
