@@ -23,7 +23,7 @@ import (
 	"github.com/DavidGamba/csv-analysis/regression"
 	"github.com/DavidGamba/csv-analysis/stat"
 	"github.com/DavidGamba/go-getoptions"
-	"github.com/gonum/matrix/mat64"
+	"gonum.org/v1/gonum/mat"
 	// "github.com/gonum/optimize"
 )
 
@@ -373,14 +373,14 @@ func main() {
 			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		log.Printf("S:\n%3.3g\n", mat64.Formatted(s.A, mat64.Prefix(""), mat64.Squeeze()))
+		log.Printf("S:\n%3.3g\n", mat.Formatted(s.A, mat.Prefix(""), mat.Squeeze()))
 
 		// si, err := regression.SolvePolynomialReverseMatrix(xSliceDataset, ySliceDataset, degree)
 		// if err != nil {
 		// 	fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		// 	os.Exit(1)
 		// }
-		// log.Printf("S (matrix):\n%3.3g\n", mat64.Formatted(si.A, mat64.Prefix(""), mat64.Squeeze()))
+		// log.Printf("S (matrix):\n%3.3g\n", mat.Formatted(si.A, mat.Prefix(""), mat.Squeeze()))
 
 		s.Plot()
 	} else {

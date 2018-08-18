@@ -16,7 +16,7 @@ import (
 	"log"
 	"math"
 
-	"github.com/gonum/matrix/mat64"
+	mat "gonum.org/v1/gonum/mat"
 )
 
 // Solution - Linear Transformation Solution.
@@ -79,7 +79,7 @@ func (s Solution) RegressionFunction() func(x float64) float64 {
 type PolynomialSolution struct {
 	X, Y   []float64 // Original data slices.
 	Degree int
-	A      *mat64.Dense // Solution
+	A      *mat.Dense // Solution
 	R2     float64
 }
 
@@ -100,7 +100,7 @@ func SolvePolynomial(xo, yo []float64, degree int) (PolynomialSolution, error) {
 	if err != nil {
 		return result, err
 	}
-	log.Printf("S:\n%3.3g\n", mat64.Formatted(s, mat64.Prefix(""), mat64.Squeeze()))
+	log.Printf("S:\n%3.3g\n", mat.Formatted(s, mat.Prefix(""), mat.Squeeze()))
 
 	result.A = s
 	result.R2 = r2Calc(result.X, result.Y, result.PolynomialFunction())
@@ -124,9 +124,9 @@ func SolvePolynomialReverseMatrix(xo, yo []float64, degree int) (PolynomialSolut
 	if err != nil {
 		return result, err
 	}
-	log.Printf("S:\n%3.3g\n", mat64.Formatted(s, mat64.Prefix(""), mat64.Squeeze()))
+	log.Printf("S:\n%3.3g\n", mat.Formatted(s, mat.Prefix(""), mat.Squeeze()))
 
-	result.A = s.(*mat64.Dense)
+	result.A = s.(*mat.Dense)
 	result.R2 = r2Calc(result.X, result.Y, result.PolynomialFunction())
 	return result, nil
 }
@@ -155,8 +155,8 @@ func (s PolynomialSolution) PolynomialFunction() func(x float64) float64 {
 //        (n)a₀ +  (∑xᵢ)a₁ + (∑xᵢ²)a₂ = ∑yᵢ
 //      (∑xᵢ)a₀ + (∑xᵢ²)a₁ + (∑xᵢ³)a₂ = ∑xᵢyᵢ
 //     (∑xᵢ²)a₀ + (∑xᵢ³)a₁ + (∑xᵢ⁴)a₂ = ∑xᵢ²yᵢ
-func PolynomialRegression(m int, x, y []float64) (*mat64.Dense, error) {
-	solved := mat64.NewDense(m+1, 1, nil)
+func PolynomialRegression(m int, x, y []float64) (*mat.Dense, error) {
+	solved := mat.NewDense(m+1, 1, nil)
 	n := len(x)
 	if n < m+1 {
 		return solved, fmt.Errorf("Not enough points")
@@ -172,8 +172,8 @@ func PolynomialRegression(m int, x, y []float64) (*mat64.Dense, error) {
 	// 	return a
 	// }
 
-	a := mat64.NewDense(m+1, m+1, nil)
-	b := mat64.NewDense(m+1, 1, nil)
+	a := mat.NewDense(m+1, m+1, nil)
+	b := mat.NewDense(m+1, 1, nil)
 	// as := initSliceOfSlices(m+1, m+1)
 	// bs := initSliceOfSlices(m+1, 1)
 	for i := 0; i < m+1; i++ {
@@ -194,7 +194,7 @@ func PolynomialRegression(m int, x, y []float64) (*mat64.Dense, error) {
 			// as[i][j] = sum
 			// as[j][i] = sum
 			// log.Printf("a: %v\n", a)
-			// log.Printf("am:\n%v\n", mat64.Formatted(am, mat64.Prefix("")))
+			// log.Printf("am:\n%v\n", mat.Formatted(am, mat.Prefix("")))
 		}
 		var sum float64
 		sum = 0
@@ -205,17 +205,17 @@ func PolynomialRegression(m int, x, y []float64) (*mat64.Dense, error) {
 		}
 		b.Set(i, 0, sum)
 		// bs[i][0] = sum
-		// log.Printf("b:\n%v\n", mat64.Formatted(b, mat64.Prefix("")))
+		// log.Printf("b:\n%v\n", mat.Formatted(b, mat.Prefix("")))
 	}
-	// log.Printf("A:\n%3.3g\n", mat64.Formatted(a, mat64.Prefix(""), mat64.Squeeze()))
-	// log.Printf("B:\n%3.3g\n", mat64.Formatted(b, mat64.Prefix(""), mat64.Squeeze()))
+	// log.Printf("A:\n%3.3g\n", mat.Formatted(a, mat.Prefix(""), mat.Squeeze()))
+	// log.Printf("B:\n%3.3g\n", mat.Formatted(b, mat.Prefix(""), mat.Squeeze()))
 
 	solved.Solve(a, b)
 	return solved, nil
 }
 
-func generateZmatrix(x []float64, m int) *mat64.Dense {
-	z := mat64.NewDense(len(x), m+1, nil)
+func generateZmatrix(x []float64, m int) *mat.Dense {
+	z := mat.NewDense(len(x), m+1, nil)
 	for i, xi := range x {
 		for j := 0; j <= m; j++ {
 			z.Set(i, j, math.Pow(xi, float64(j)))
@@ -224,19 +224,19 @@ func generateZmatrix(x []float64, m int) *mat64.Dense {
 	return z
 }
 
-func polynomialRegressionInverseMatrix(m int, xSliceDataset, ySliceDataset []float64) (mat64.Matrix, error) {
-	var afinal, zAndzTranspose, zAndzTransposeInverse, yAndzTranspose mat64.Dense
-	y := mat64.NewVector(len(ySliceDataset), ySliceDataset)
+func polynomialRegressionInverseMatrix(m int, xSliceDataset, ySliceDataset []float64) (mat.Matrix, error) {
+	var afinal, zAndzTranspose, zAndzTransposeInverse, yAndzTranspose mat.Dense
+	y := mat.NewVecDense(len(ySliceDataset), ySliceDataset)
 	z := generateZmatrix(xSliceDataset, m)
-	log.Printf("[Z]:\n%f\n", mat64.Formatted(z, mat64.Prefix(""), mat64.Squeeze()))
+	log.Printf("[Z]:\n%f\n", mat.Formatted(z, mat.Prefix(""), mat.Squeeze()))
 	zAndzTranspose.Mul(z.T(), z)
-	log.Printf("[Z]^T [Z]:\n%f\n", mat64.Formatted(&zAndzTranspose, mat64.Prefix(""), mat64.Squeeze()))
+	log.Printf("[Z]^T [Z]:\n%f\n", mat.Formatted(&zAndzTranspose, mat.Prefix(""), mat.Squeeze()))
 	yAndzTranspose.Mul(z.T(), y)
-	log.Printf("[Z]^T {y}:\n%f\n", mat64.Formatted(&yAndzTranspose, mat64.Prefix(""), mat64.Squeeze()))
+	log.Printf("[Z]^T {y}:\n%f\n", mat.Formatted(&yAndzTranspose, mat.Prefix(""), mat.Squeeze()))
 	zAndzTransposeInverse.Inverse(&zAndzTranspose)
-	log.Printf("[[Z]^T [Z]]^1:\n%f\n", mat64.Formatted(&zAndzTransposeInverse, mat64.Prefix(""), mat64.Squeeze()))
+	log.Printf("[[Z]^T [Z]]^1:\n%f\n", mat.Formatted(&zAndzTransposeInverse, mat.Prefix(""), mat.Squeeze()))
 	afinal.Mul(&zAndzTransposeInverse, &yAndzTranspose)
-	log.Printf("A:\n%f\n", mat64.Formatted(&afinal, mat64.Prefix(""), mat64.Squeeze()))
+	log.Printf("A:\n%f\n", mat.Formatted(&afinal, mat.Prefix(""), mat.Squeeze()))
 	return &afinal, nil
 }
 
