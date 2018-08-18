@@ -16,7 +16,7 @@ import (
 	"log"
 	"math"
 
-	mat "gonum.org/v1/gonum/mat"
+	"gonum.org/v1/gonum/mat"
 )
 
 // Solution - Linear Transformation Solution.
